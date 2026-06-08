@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Nicolas — Fitness App</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --s1: #141414;
+  --s2: #1e1e1e;
+  --s3: #2a2a2a;
+  --s4: #3a3a3a;
+  --s5: #555;
+  --s6: #888;
+  --txt: #f0ede8;
+  --txt2: #bbb;
+  --orange: #e8621a;
+  --orange2: rgba(232,98,26,0.15);
+  --orange3: rgba(232,98,26,0.08);
+  --vert: #52b788;
+  --vert2: rgba(82,183,136,0.12);
+  --gold: #c9a84c;
+  --gold2: rgba(201,168,76,0.12);
+  --bleu: #4ea8de;
+  --bleu2: rgba(78,168,222,0.12);
+  --red: #e76f51;
+  --tab-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--txt); font-family:'DM Sans',sans-serif; font-weight:300; }
+
+/* ===== LAYOUT ===== */
+.app { display:flex; flex-direction:column; height:100vh; height:-webkit-fill-available; }
+.screen { flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding-bottom:calc(var(--tab-h) + var(--safe-bottom) + 8px); }
+
+/* ===== BOTTOM TAB BAR ===== */
+.tabbar {
+  position:fixed; bottom:0; left:0; right:0;
+  height:calc(var(--tab-h) + var(--safe-bottom));
+  padding-bottom:var(--safe-bottom);
+  background:var(--s1);
+  border-top:1px solid var(--s3);
+  display:flex; z-index:200;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.tabbtn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; border:none; background:none; cursor:pointer;
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.5px;
+  text-transform:uppercase; color:var(--s5); transition:color 0.2s;
+  padding-top:8px;
+}
+.tabbtn .ico { font-size:22px; line-height:1; }
+.tabbtn.act { color:var(--orange); }
+.tabbtn.act-vert { color:var(--vert); }
+.tabbtn.act-bleu { color:var(--bleu); }
+.tabbtn.act-gold { color:var(--gold); }
+
+/* ===== SECTION HEADER ===== */
+.page { display:none; }
+.page.active { display:block; }
+.page-hero {
+  padding:20px 16px 16px;
+  background:var(--s1);
+  border-bottom:1px solid var(--s3);
+  position:sticky; top:0; z-index:50;
+}
+.hero-tag { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:4px; }
+.hero-title { font-family:'Bebas Neue',cursive; font-size:36px; line-height:1; letter-spacing:1px; }
+.hero-title span { color:var(--orange); }
+.hero-title.bleu span { color:var(--bleu); }
+.hero-title.vert span { color:var(--vert); }
+.hero-title.gold span { color:var(--gold); }
+
+/* ===== CARDS ===== */
+.card { background:var(--s1); border:1px solid var(--s3); border-radius:14px; margin:0 16px 12px; overflow:hidden; }
+.card-pad { padding:16px; }
+.sec-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--s5); padding:20px 16px 8px; }
+
+/* ===== PROGRAMME — PLANNING ===== */
+.week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding:16px; }
+.day-cell { background:var(--s2); border-radius:10px; padding:10px 4px; text-align:center; border-top:3px solid var(--s3); }
+.day-cell.muscu { border-top-color:var(--orange); }
+.day-cell.run { border-top-color:var(--vert); }
+.day-cell.rest { opacity:0.5; }
+.day-cell .d-ico { font-size:16px; }
+.day-cell .d-name { font-family:'DM Mono',monospace; font-size:8px; text-transform:uppercase; color:var(--s6); margin:4px 0 2px; }
+.day-cell .d-type { font-family:'Bebas Neue',cursive; font-size:12px; color:var(--orange); }
+.day-cell.run .d-type { color:var(--vert); }
+.day-cell.rest .d-type { color:var(--s5); }
+
+/* ===== SEANCE ACCORDIONS ===== */
+.acc { background:var(--s1); border:1px solid var(--s3); border-radius:14px; margin:0 16px 12px; overflow:hidden; }
+.acc-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px; cursor:pointer; user-select:none;
+  -webkit-user-select:none;
+}
+.acc-head:active { background:var(--s2); }
+.acc-left { display:flex; align-items:center; gap:12px; }
+.acc-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.acc-dot.push { background:var(--orange); }
+.acc-dot.pull { background:var(--bleu); }
+.acc-dot.legs { background:var(--vert); }
+.acc-dot.core { background:var(--gold); }
+.acc-title { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:0.5px; }
+.acc-sub { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--s6); margin-top:2px; }
+.acc-badge {
+  font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1px;
+  padding:4px 10px; border-radius:20px; border:1px solid;
+}
+.acc-badge.push { color:var(--orange); border-color:var(--orange); background:var(--orange2); }
+.acc-badge.pull { color:var(--bleu); border-color:var(--bleu); background:var(--bleu2); }
+.acc-badge.legs { color:var(--vert); border-color:var(--vert); background:var(--vert2); }
+.acc-badge.core { color:var(--gold); border-color:var(--gold); background:var(--gold2); }
+.acc-arrow { color:var(--s5); font-size:12px; transition:transform 0.25s; }
+.acc-head.open .acc-arrow { transform:rotate(180deg); }
+.acc-body { display:none; border-top:1px solid var(--s3); }
+.acc-body.open { display:block; }
+
+/* EXERCISE LIST */
+.exo-row { padding:14px 16px; border-bottom:1px solid var(--s2); }
+.exo-row:last-child { border-bottom:none; }
+.exo-row-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.exo-name { font-size:14px; font-weight:500; flex:1; line-height:1.3; }
+.exo-sets { font-family:'DM Mono',monospace; font-size:11px; background:var(--orange2); color:var(--orange); padding:3px 8px; border-radius:4px; white-space:nowrap; }
+.exo-sets.pull { background:var(--bleu2); color:var(--bleu); }
+.exo-sets.legs { background:var(--vert2); color:var(--vert); }
+.exo-sets.core { background:var(--gold2); color:var(--gold); }
+.exo-machine { font-family:'DM Mono',monospace; font-size:10px; color:var(--s6); margin-top:4px; }
+.exo-note-prog { font-size:12px; color:var(--s6); font-style:italic; margin-top:4px; }
+
+/* KNEE WARNING */
+.knee-warn { margin:0 16px 12px; background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.25); border-radius:12px; padding:12px 14px; font-size:12px; color:var(--gold); display:flex; gap:8px; }
+
+/* INFO BOX */
+.info-box { margin:0 16px 12px; background:var(--vert2); border:1px solid rgba(82,183,136,0.2); border-radius:12px; padding:12px 14px; font-size:12px; color:var(--vert); display:flex; gap:8px; }
+
+/* ===== SUIVI CHARGES ===== */
+.week-nav { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--s2); border-bottom:1px solid var(--s3); }
+.week-nav-btn { background:var(--s3); border:none; color:var(--txt); border-radius:8px; width:38px; height:38px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.week-nav-btn:active { background:var(--s4); }
+.week-info { text-align:center; }
+.week-num { font-family:'Bebas Neue',cursive; font-size:26px; line-height:1; color:var(--vert); }
+.week-phase-lbl { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--s6); margin-top:2px; }
+
+.stats-row { display:flex; gap:1px; background:var(--s3); border-bottom:1px solid var(--s3); }
+.stat-box { flex:1; background:var(--s1); padding:12px 8px; text-align:center; }
+.stat-v { font-family:'Bebas Neue',cursive; font-size:24px; line-height:1; color:var(--vert); }
+.stat-l { font-family:'DM Mono',monospace; font-size:8px; text-transform:uppercase; letter-spacing:1px; color:var(--s6); margin-top:3px; }
+
+.seance-pills { display:flex; gap:8px; padding:14px 16px 6px; overflow-x:auto; scrollbar-width:none; }
+.seance-pills::-webkit-scrollbar { display:none; }
+.pill {
+  flex-shrink:0; font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase;
+  letter-spacing:1px; padding:8px 14px; border-radius:20px; border:1px solid var(--s4);
+  background:var(--s2); color:var(--s6); cursor:pointer; white-space:nowrap;
+  transition:all 0.15s;
+}
+.pill.act-push { background:var(--orange2); color:var(--orange); border-color:var(--orange); }
+.pill.act-pull { background:var(--bleu2); color:var(--bleu); border-color:var(--bleu); }
+.pill.act-legs { background:var(--vert2); color:var(--vert); border-color:var(--vert); }
+.pill.act-core { background:var(--gold2); color:var(--gold); border-color:var(--gold); }
+
+.suivi-panel { display:none; }
+.suivi-panel.active { display:block; }
+
+.exo-card-suivi { background:var(--s1); border:1px solid var(--s3); border-radius:14px; margin:0 16px 12px; overflow:hidden; }
+.ecs-head { padding:14px 16px; border-bottom:1px solid var(--s3); display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.ecs-num { font-family:'Bebas Neue',cursive; font-size:20px; color:var(--s4); flex-shrink:0; }
+.ecs-info { flex:1; }
+.ecs-name { font-size:14px; font-weight:500; }
+.ecs-machine { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; color:var(--s6); margin-top:3px; }
+.ecs-target { font-family:'DM Mono',monospace; font-size:10px; background:var(--s2); color:var(--s6); padding:3px 8px; border-radius:4px; border:1px solid var(--s3); white-space:nowrap; flex-shrink:0; }
+
+.sets-row { display:flex; gap:8px; padding:12px 16px; overflow-x:auto; scrollbar-width:none; }
+.sets-row::-webkit-scrollbar { display:none; }
+.set-box { flex-shrink:0; background:var(--s2); border:1px solid var(--s3); border-radius:10px; padding:10px; min-width:76px; text-align:center; }
+.set-lbl { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; color:var(--s6); margin-bottom:6px; }
+.set-inp {
+  width:56px; background:var(--s3); border:1px solid var(--s4); border-radius:6px;
+  color:var(--txt); font-family:'DM Mono',monospace; font-size:18px; font-weight:500;
+  padding:6px 4px; text-align:center; -moz-appearance:textfield;
+  -webkit-appearance:none; border:1px solid var(--s4);
+}
+.set-inp::-webkit-inner-spin-button,.set-inp::-webkit-outer-spin-button { -webkit-appearance:none; }
+.set-inp:focus { outline:none; border-color:var(--vert); background:var(--s1); }
+.set-unit { font-family:'DM Mono',monospace; font-size:9px; color:var(--s6); margin-top:4px; }
+.set-prev { font-family:'DM Mono',monospace; font-size:9px; margin-top:4px; color:var(--s6); }
+.set-prev.up { color:var(--vert); }
+.set-prev.dn { color:var(--red); }
+
+.note-row { padding:0 16px 12px; }
+.note-inp {
+  width:100%; background:var(--s2); border:1px solid var(--s3); border-radius:8px;
+  color:var(--txt); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:300;
+  padding:8px 12px; resize:none; height:36px; transition:height 0.2s;
+}
+.note-inp::placeholder { color:var(--s5); }
+.note-inp:focus { outline:none; border-color:var(--s4); height:52px; }
+
+.hist-toggle-btn { width:100%; padding:10px 16px; background:none; border:none; border-top:1px solid var(--s3); font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--s6); cursor:pointer; text-align:left; display:flex; justify-content:space-between; }
+.hist-toggle-btn:active { background:var(--s2); }
+.hist-panel { display:none; border-top:1px solid var(--s2); }
+.hist-panel.open { display:block; }
+.hist-row { display:flex; align-items:center; gap:8px; padding:8px 16px; border-bottom:1px solid var(--s2); flex-wrap:wrap; }
+.hist-row:last-child { border-bottom:none; }
+.hist-wk { font-family:'DM Mono',monospace; font-size:9px; color:var(--s6); min-width:36px; }
+.hist-ws { display:flex; gap:4px; flex-wrap:wrap; }
+.hist-w { font-family:'DM Mono',monospace; font-size:11px; background:var(--s2); padding:2px 6px; border-radius:3px; }
+.delta { font-family:'DM Mono',monospace; font-size:9px; padding:2px 6px; border-radius:3px; }
+.delta.up { background:var(--vert2); color:var(--vert); }
+.delta.dn { background:rgba(231,111,81,0.15); color:var(--red); }
+.delta.eq { background:var(--s2); color:var(--s6); }
+.hist-note { font-size:11px; color:var(--s6); font-style:italic; flex:1; text-align:right; }
+
+.save-btn {
+  display:block; width:calc(100% - 32px); margin:0 16px 16px;
+  background:var(--vert); color:#fff; border:none; border-radius:12px;
+  padding:14px; font-family:'DM Mono',monospace; font-size:11px;
+  text-transform:uppercase; letter-spacing:2px; cursor:pointer;
+  transition:background 0.15s;
+}
+.save-btn:active { background:#3d9e6e; }
+
+/* ===== NUTRITION ===== */
+.macro-row { display:flex; gap:8px; padding:16px; }
+.macro-box { flex:1; background:var(--s2); border:1px solid var(--s3); border-radius:12px; padding:12px 8px; text-align:center; }
+.macro-v { font-family:'Bebas Neue',cursive; font-size:28px; line-height:1; }
+.macro-l { font-family:'DM Mono',monospace; font-size:8px; text-transform:uppercase; letter-spacing:1px; color:var(--s6); margin-top:4px; }
+.macro-d { font-size:10px; color:var(--s5); margin-top:2px; }
+
+.meal-card { background:var(--s1); border:1px solid var(--s3); border-radius:14px; margin:0 16px 12px; overflow:hidden; border-left:4px solid var(--orange); }
+.meal-card.vert { border-left-color:var(--vert); }
+.meal-card.gold { border-left-color:var(--gold); }
+.meal-time { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--s6); padding:14px 16px 0; }
+.meal-name { font-family:'Bebas Neue',cursive; font-size:20px; padding:2px 16px 10px; }
+.meal-item { padding:8px 16px; border-top:1px solid var(--s2); font-size:13px; color:var(--txt2); display:flex; gap:8px; align-items:flex-start; }
+.meal-item::before { content:'—'; color:var(--orange); font-size:11px; margin-top:2px; flex-shrink:0; }
+.meal-card.vert .meal-item::before { color:var(--vert); }
+.meal-card.gold .meal-item::before { color:var(--gold); }
+.chol { display:inline-block; background:var(--gold2); color:var(--gold); font-family:'DM Mono',monospace; font-size:8px; padding:1px 5px; border-radius:3px; border:1px solid rgba(201,168,76,0.3); margin-left:4px; vertical-align:middle; }
+
+.day-toggle { display:flex; gap:8px; padding:0 16px 4px; }
+.dtbtn { flex:1; font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1px; padding:8px; border-radius:8px; border:1px solid var(--s3); background:var(--s2); color:var(--s6); cursor:pointer; text-align:center; }
+.dtbtn.act { background:var(--orange2); color:var(--orange); border-color:var(--orange); }
+.dtbtn.act-vert { background:var(--vert2); color:var(--vert); border-color:var(--vert); }
+.day-meals { display:none; }
+.day-meals.active { display:block; }
+
+/* ===== COURSES ===== */
+.courses-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; }
+.courses-title { font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--s6); }
+.budget-badge { font-family:'DM Mono',monospace; font-size:10px; background:var(--vert2); color:var(--vert); padding:4px 10px; border-radius:20px; border:1px solid rgba(82,183,136,0.3); }
+
+.cat-block { margin:0 16px 16px; }
+.cat-title { font-family:'Bebas Neue',cursive; font-size:18px; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.course-item { display:flex; align-items:center; gap:12px; padding:11px 14px; background:var(--s1); border:1px solid var(--s3); border-radius:10px; margin-bottom:6px; cursor:pointer; transition:all 0.15s; -webkit-user-select:none; user-select:none; }
+.course-item:active { background:var(--s2); }
+.course-item.checked { opacity:0.45; }
+.course-cb { width:22px; height:22px; border-radius:6px; border:2px solid var(--s4); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.course-item.checked .course-cb { background:var(--vert); border-color:var(--vert); }
+.course-cb-tick { color:#fff; font-size:13px; opacity:0; transition:opacity 0.2s; }
+.course-item.checked .course-cb-tick { opacity:1; }
+.course-name { flex:1; font-size:14px; }
+.course-item.checked .course-name { text-decoration:line-through; color:var(--s5); }
+.course-qty { font-family:'DM Mono',monospace; font-size:10px; color:var(--s6); flex-shrink:0; }
+
+.courses-actions { display:flex; gap:8px; padding:0 16px 8px; }
+.c-btn { flex:1; font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1px; padding:10px 8px; border-radius:10px; border:1px solid var(--s3); background:var(--s2); color:var(--s6); cursor:pointer; text-align:center; }
+.c-btn:active { background:var(--s3); }
+.c-btn.primary { background:var(--vert2); color:var(--vert); border-color:var(--vert); }
+.c-btn.primary:active { background:var(--vert); color:#fff; }
+
+.prog-bar-wrap { height:4px; background:var(--s3); border-radius:2px; margin:0 16px 16px; overflow:hidden; }
+.prog-bar { height:100%; background:var(--vert); border-radius:2px; transition:width 0.4s ease; }
+
+/* ===== TOAST ===== */
+.toast {
+  position:fixed; bottom:calc(var(--tab-h) + var(--safe-bottom) + 12px); left:16px; right:16px;
+  background:var(--s2); border:1px solid var(--vert); border-radius:12px;
+  padding:14px 18px; font-family:'DM Mono',monospace; font-size:11px; color:var(--vert);
+  letter-spacing:1px; text-transform:uppercase; text-align:center;
+  opacity:0; transform:translateY(8px); transition:all 0.3s; pointer-events:none; z-index:999;
+}
+.toast.show { opacity:1; transform:translateY(0); }
+
+/* ===== MISC ===== */
+.chol-rules { margin:0 16px 12px; background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.2); border-radius:14px; padding:14px 16px; }
+.chol-rules .cr-title { font-family:'Bebas Neue',cursive; font-size:18px; color:var(--gold); margin-bottom:10px; }
+.chol-rule { font-size:13px; color:var(--txt2); padding:5px 0; border-bottom:1px solid rgba(201,168,76,0.1); display:flex; gap:8px; line-height:1.4; }
+.chol-rule:last-child { border-bottom:none; }
+
+.phase-row { display:flex; flex-direction:column; gap:10px; padding:0 16px 4px; }
+.phase-item { background:var(--s1); border:1px solid var(--s3); border-radius:12px; padding:14px 16px; border-left:4px solid var(--s3); }
+.phase-item.p1 { border-left-color:var(--vert); }
+.phase-item.p2 { border-left-color:var(--orange); }
+.phase-item.p3 { border-left-color:var(--gold); }
+.phase-num { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--s6); margin-bottom:4px; }
+.phase-title { font-family:'Bebas Neue',cursive; font-size:20px; }
+.phase-item.p1 .phase-title { color:var(--vert); }
+.phase-item.p2 .phase-title { color:var(--orange); }
+.phase-item.p3 .phase-title { color:var(--gold); }
+.phase-desc { font-size:12px; color:var(--s6); margin-top:4px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SCREENS ===== -->
+<div class="screen" id="sc-programme">
+  <!-- PAGE: PROGRAMME -->
+  <div id="pg-prog" class="page active">
+    <div class="page-hero">
+      <div class="hero-tag">Programme · Nicolas 2026</div>
+      <div class="hero-title">FORCE <span>&</span> COURSE</div>
+    </div>
+
+    <div class="sec-label">Planning hebdomadaire</div>
+    <div class="card" style="margin-bottom:0">
+      <div class="week-grid">
+        <div class="day-cell muscu"><div class="d-ico">💪</div><div class="d-name">Lun</div><div class="d-type">PUSH</div></div>
+        <div class="day-cell run"><div class="d-ico">🏃</div><div class="d-name">Mar</div><div class="d-type">RUN</div></div>
+        <div class="day-cell muscu"><div class="d-ico">💪</div><div class="d-name">Mer</div><div class="d-type">PULL</div></div>
+        <div class="day-cell rest"><div class="d-ico">😴</div><div class="d-name">Jeu</div><div class="d-type">REPOS</div></div>
+        <div class="day-cell muscu"><div class="d-ico">💪</div><div class="d-name">Ven</div><div class="d-type">JAMBES</div></div>
+        <div class="day-cell run"><div class="d-ico">🏃</div><div class="d-name">Sam</div><div class="d-type">RUN</div></div>
+        <div class="day-cell muscu"><div class="d-ico">🔥</div><div class="d-name">Dim</div><div class="d-type">CORE</div></div>
+      </div>
+    </div>
+
+    <div class="sec-label">Séances détaillées</div>
+
+    <!-- PUSH -->
+    <div class="acc">
+      <div class="acc-head open" onclick="togAcc(this)">
+        <div class="acc-left"><div class="acc-dot push"></div><div><div class="acc-title">A — PUSH</div><div class="acc-sub">Lundi · Pec · Épaules · Triceps</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="acc-badge push">~55 min</div><div class="acc-arrow">▼</div></div>
+      </div>
+      <div class="acc-body open">
+        <div class="info-box">💡 Récup 60–75 sec entre séries. Charge légère en Phase 1.</div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Développé couché Machine</div><div class="exo-sets">3×12–15</div></div><div class="exo-machine">🏋️ Machine chest press</div><div class="exo-note-prog">Prise en main neutre, coudes à 45°</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Écarté pectoraux Machine</div><div class="exo-sets">3×15</div></div><div class="exo-machine">🏋️ Machine pec-deck / papillon</div><div class="exo-note-prog">Étirement contrôlé en ouverture</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Développé épaules Machine</div><div class="exo-sets">3×12</div></div><div class="exo-machine">🏋️ Machine shoulder press</div><div class="exo-note-prog">Dos bien plaqué au dossier</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Élévations latérales Haltères</div><div class="exo-sets">3×15</div></div><div class="exo-machine">🏋️ Rack haltères</div><div class="exo-note-prog">Coudes légèrement fléchis, léger</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Dips Machine (assistés)</div><div class="exo-sets">3×12</div></div><div class="exo-machine">🏋️ Machine dips/tractions assistées</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Pushdowns triceps Poulie</div><div class="exo-sets">3×15</div></div><div class="exo-machine">🏋️ Câble station, corde</div><div class="exo-note-prog">Coudes fixes au corps</div></div>
+      </div>
+    </div>
+
+    <!-- PULL -->
+    <div class="acc">
+      <div class="acc-head" onclick="togAcc(this)">
+        <div class="acc-left"><div class="acc-dot pull"></div><div><div class="acc-title">B — PULL</div><div class="acc-sub">Mercredi · Dos · Biceps · Trapèzes</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="acc-badge pull">~55 min</div><div class="acc-arrow">▼</div></div>
+      </div>
+      <div class="acc-body">
+        <div class="info-box" style="background:var(--bleu2);border-color:rgba(78,168,222,0.2)"><span style="color:var(--bleu)">💡 Sur le tirage vertical : active le dos avant les bras. Imagine tes coudes qui descendent vers tes poches.</span></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Tirage vertical Machine</div><div class="exo-sets pull">4×12</div></div><div class="exo-machine">🏋️ Lat pulldown / câble</div><div class="exo-note-prog">Prise large, tire vers le menton</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Rowing Machine assise</div><div class="exo-sets pull">3×12</div></div><div class="exo-machine">🏋️ Seated row machine</div><div class="exo-note-prog">Dos droit, coudes proches du corps</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Pull-over Machine</div><div class="exo-sets pull">3×15</div></div><div class="exo-machine">🏋️ Machine pull-over / câble haut</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Shrugs Haltères / Barre</div><div class="exo-sets pull">3×15</div></div><div class="exo-machine">🏋️ Rack haltères ou barre</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Curl biceps Haltères alterné</div><div class="exo-sets pull">3×12</div></div><div class="exo-machine">🏋️ Rack haltères</div><div class="exo-note-prog">Supination en montée, ne balance pas</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Curl Marteau</div><div class="exo-sets pull">3×12</div></div><div class="exo-machine">🏋️ Rack haltères</div><div class="exo-note-prog">Prise neutre, renforce le brachial</div></div>
+      </div>
+    </div>
+
+    <!-- LEGS -->
+    <div class="acc">
+      <div class="acc-head" onclick="togAcc(this)">
+        <div class="acc-left"><div class="acc-dot legs"></div><div><div class="acc-title">C — JAMBES</div><div class="acc-sub">Vendredi · Quads · Fessiers · Mollets</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="acc-badge legs">~50 min</div><div class="acc-arrow">▼</div></div>
+      </div>
+      <div class="acc-body">
+        <div class="knee-warn">⚠️ <div><strong>Genou droit ménisque :</strong> amplitude partielle, 90° max sur leg press. Stoppe si douleur. Vélo stationnaire pour échauffement (8 min).</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Leg Press Machine 🦵</div><div class="exo-sets legs">4×15</div></div><div class="exo-machine">🏋️ Machine leg press inclinée</div><div class="exo-note-prog">Pieds largeur épaules · 90° max</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Extensions quadriceps Machine</div><div class="exo-sets legs">3×15</div></div><div class="exo-machine">🏋️ Machine leg extension</div><div class="exo-note-prog">Amplitude partielle si douleur</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Leg Curl couché Machine</div><div class="exo-sets legs">3×15</div></div><div class="exo-machine">🏋️ Machine lying leg curl</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Hip Thrust Machine / Banc</div><div class="exo-sets legs">4×15</div></div><div class="exo-machine">🏋️ Machine glute bridge</div><div class="exo-note-prog">0 impact genou · fessiers</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Mollets Machine debout</div><div class="exo-sets legs">4×20</div></div><div class="exo-machine">🏋️ Machine standing calf raise</div><div class="exo-note-prog">Montée lente, descente contrôlée</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Abducteurs Machine</div><div class="exo-sets legs">3×20</div></div><div class="exo-machine">🏋️ Machine hip abduction</div><div class="exo-note-prog">Stabilise le genou en course</div></div>
+      </div>
+    </div>
+
+    <!-- CORE -->
+    <div class="acc">
+      <div class="acc-head" onclick="togAcc(this)">
+        <div class="acc-left"><div class="acc-dot core"></div><div><div class="acc-title">D — CORE</div><div class="acc-sub">Dimanche · Abdos · Gainage · Obliques</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="acc-badge core">~45 min</div><div class="acc-arrow">▼</div></div>
+      </div>
+      <div class="acc-body">
+        <div class="info-box" style="background:var(--gold2);border-color:rgba(201,168,76,0.2)"><span style="color:var(--gold)">💡 15 min vélo/cardio d'abord. Les poignées d'amour disparaissent avec le déficit calorique + gainage progressif.</span></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Gainage frontal (Planche)</div><div class="exo-sets core">3×30–45 sec</div></div><div class="exo-machine">🧘 Sol, tapis</div><div class="exo-note-prog">+5 sec par semaine</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Gainage latéral</div><div class="exo-sets core">3×25 sec</div></div><div class="exo-machine">🧘 Sol, chaque côté</div><div class="exo-note-prog">Obliques · clé pour les poignées d'amour</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Crunchs à la poulie haute</div><div class="exo-sets core">3×20</div></div><div class="exo-machine">🏋️ Câble station, corde</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Relevés de jambes suspendu</div><div class="exo-sets core">3×12–15</div></div><div class="exo-machine">🏋️ Barre de traction / chaise romaine</div><div class="exo-note-prog">Genoux fléchis si besoin</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Russian Twist médecine-ball</div><div class="exo-sets core">3×20</div></div><div class="exo-machine">🏋️ Zone free weights</div><div class="exo-note-prog">3–5 kg · dos droit</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Dead Bug</div><div class="exo-sets core">3×10/côté</div></div><div class="exo-machine">🧘 Sol, tapis</div><div class="exo-note-prog">Mouvement lent, dos collé au sol</div></div>
+        <div class="exo-row"><div class="exo-row-top"><div class="exo-name">Vacuum abdominal</div><div class="exo-sets core">3×10 sec</div></div><div class="exo-machine">🧘 Debout</div><div class="exo-note-prog">Expire tout, rentre le ventre, tiens</div></div>
+      </div>
+    </div>
+
+    <div class="sec-label">Progression — 3 phases</div>
+    <div class="phase-row">
+      <div class="phase-item p1"><div class="phase-num">Phase 01 · Semaines 1–6</div><div class="phase-title">FONDATIONS</div><div class="phase-desc">Maîtriser les mouvements, établir les habitudes. Charges légères (60–70%). Objectif : −2 à −3 kg, planche 45 sec.</div></div>
+      <div class="phase-item p2"><div class="phase-num">Phase 02 · Semaines 7–14</div><div class="phase-title">INTENSIFICATION</div><div class="phase-desc">Charges à 70–80%, supersets, 4 séances fixes. Augmente tes distances de course. Objectif : −5 à −7 kg cumulé.</div></div>
+      <div class="phase-item p3"><div class="phase-num">Phase 03 · Semaines 15–24</div><div class="phase-title">CONSOLIDATION</div><div class="phase-desc">Raffinement, composition corporelle, semi possible. Objectif : 90–92 kg, planche 75 sec.</div></div>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- ===== SUIVI CHARGES ===== -->
+<div class="screen" id="sc-suivi" style="display:none">
+  <div class="page-hero">
+    <div class="hero-tag">Journal de charges</div>
+    <div class="hero-title bleu">SUIVI <span>MUSCU</span></div>
+  </div>
+
+  <div class="week-nav">
+    <button class="week-nav-btn" onclick="chWeek(-1)">◀</button>
+    <div class="week-info">
+      <div class="week-num" id="wkNum">Semaine 1</div>
+      <div class="week-phase-lbl" id="wkPhase">Phase 1 — Fondations</div>
+    </div>
+    <button class="week-nav-btn" onclick="chWeek(1)">▶</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-v" id="stSeances">0</div><div class="stat-l">Séances</div></div>
+    <div class="stat-box"><div class="stat-v" id="stExos">0</div><div class="stat-l">Exos</div></div>
+    <div class="stat-box"><div class="stat-v" id="stPR">0</div><div class="stat-l">PR battus</div></div>
+    <div class="stat-box"><div class="stat-v" id="stWk" style="color:var(--s6)">S1</div><div class="stat-l">Semaine</div></div>
+  </div>
+
+  <div class="seance-pills" id="suiviPills">
+    <div class="pill act-push" onclick="showSuivi('push',this)">💪 Push</div>
+    <div class="pill" onclick="showSuivi('pull',this)">🔵 Pull</div>
+    <div class="pill" onclick="showSuivi('legs',this)">🟢 Jambes</div>
+    <div class="pill" onclick="showSuivi('core',this)">🟡 Core</div>
+  </div>
+
+  <div id="suivi-push" class="suivi-panel active"></div>
+  <div id="suivi-pull" class="suivi-panel"></div>
+  <div id="suivi-legs" class="suivi-panel"></div>
+  <div id="suivi-core" class="suivi-panel"></div>
+</div>
+
+<!-- ===== NUTRITION ===== -->
+<div class="screen" id="sc-nutrition" style="display:none">
+  <div class="page-hero">
+    <div class="hero-tag">Plan alimentaire · Anti-cholestérol</div>
+    <div class="hero-title vert">NUTRITION <span>PLAN</span></div>
+  </div>
+
+  <div class="macro-row">
+    <div class="macro-box"><div class="macro-v" style="color:var(--orange)">~2100</div><div class="macro-l">Kcal salle</div><div class="macro-d">Déficit ~500</div></div>
+    <div class="macro-box"><div class="macro-v" style="color:var(--vert)">~1900</div><div class="macro-l">Kcal repos</div><div class="macro-d">Déficit ~500</div></div>
+    <div class="macro-box"><div class="macro-v" style="color:var(--gold)">165g</div><div class="macro-l">Protéines</div><div class="macro-d">1,6g/kg cible</div></div>
+  </div>
+
+  <div class="chol-rules">
+    <div class="cr-title">⚠️ Règles cholestérol &amp; protéines</div>
+    <div class="chol-rule">🥤 <span><strong>Shaker whey isolat</strong> les jours de sport (matin post-séance) — réduit œufs &amp; viande sans baisser les protéines</span></div>
+    <div class="chol-rule">✅ <span>Œufs : <strong>2 entiers max/semaine</strong> (jours repos), blancs illimités <span class="chol">chol.</span></span></div>
+    <div class="chol-rule">✅ <span>Viande/poisson : portions réduites à <strong>120g</strong> les jours avec shaker</span></div>
+    <div class="chol-rule">✅ <span>Viande rouge max <strong>2×/semaine</strong>, morceaux maigres (rumsteck, filet)</span></div>
+    <div class="chol-rule">✅ <span>Huile d'olive, avocat, noix, saumon, sardines = bonnes graisses</span></div>
+    <div class="chol-rule">⛔ <span>Fast-food → max <strong>1×/mois</strong></span></div>
+    <div class="chol-rule">💧 <span><strong>2,5–3L d'eau/jour</strong> — non négociable</span></div>
+  </div>
+
+  <div class="info-box" style="margin:0 16px 12px">🥤 <div><strong>Whey conseillée :</strong> isolat (pas concentré) — sans graisses saturées, compatible cholestérol. Marques budget : Myprotein Impact Whey Isolate ou Foodspring. Choisis &lt; 5g de sucre/dose, arôme léger (vanille, chocolat noir).</div></div>
+
+  <div class="day-toggle">
+    <div class="dtbtn act" onclick="showDay('salle',this)">🏋️ Jour Salle</div>
+    <div class="dtbtn" onclick="showDay('course',this)" style="">🏃 Jour Course</div>
+    <div class="dtbtn" onclick="showDay('repos',this)">😴 Jour Repos</div>
+  </div>
+
+  <!-- JOUR SALLE -->
+  <div id="day-salle" class="day-meals active">
+    <div class="sec-label" style="padding-top:14px">Lundi · Mercredi · Vendredi (matin avant travail) · Dimanche</div>
+
+    <div class="meal-card vert">
+      <div class="meal-time">06h00 — Avant la séance (réveil)</div>
+      <div class="meal-name">⚡ Pré-séance express</div>
+      <div class="meal-item">1 banane + café sans sucre — digestion rapide, 15 min suffisent</div>
+      <div class="meal-item">Option à jeun : acceptable si séance &lt; 60 min — favorise le brûle-graisses</div>
+      <div class="meal-item">500 ml d'eau avant de partir, obligatoire</div>
+    </div>
+
+    <div class="meal-card gold">
+      <div class="meal-time">07h30–08h00 — Post-séance = Petit-déjeuner</div>
+      <div class="meal-name">🥤 Shaker récup + avoine</div>
+      <div class="meal-item">🥤 <strong>Shaker whey isolat</strong> (1 dose ~25g protéines) dans 250ml lait végétal ou eau — à préparer la veille, boire dans les 30 min post-séance</div>
+      <div class="meal-item">Flocons d'avoine (60g) + fruits rouges ou banane</div>
+      <div class="meal-item">Café sans sucre</div>
+      <div class="meal-item" style="color:var(--s6);font-style:italic;font-size:12px">Les jours avec shaker : pas d'œufs le matin — le shaker couvre les 25g de protéines post-séance.</div>
+    </div>
+
+    <div class="meal-card vert">
+      <div class="meal-time">10h30 — Collation bureau</div>
+      <div class="meal-name">🍎 Snack anti-fringale</div>
+      <div class="meal-item">1 pomme ou poire + 10 amandes ou noix</div>
+      <div class="meal-item">Ou yaourt nature 0% + 1 cc de miel</div>
+      <div class="meal-item" style="color:var(--s6);font-style:italic;font-size:12px">Après une séance tôt, la faim revient vers 10h — anticipe avec un snack au bureau.</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-time">12h30 — Déjeuner</div>
+      <div class="meal-name">🍽️ Repas principal allégé</div>
+      <div class="meal-item">Protéine <strong>120g</strong> (réduit vs sans shaker) : poulet, dinde, poisson — viande rouge max 2×/sem <span class="chol">chol.</span></div>
+      <div class="meal-item">Féculent 100g cuit : riz, patate douce, pois chiches ou lentilles</div>
+      <div class="meal-item">Légumes à volonté : tomates, haricots verts, champignons, salade, oignons</div>
+      <div class="meal-item">1 filet d'huile d'olive</div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-time">19h30 — Dîner</div>
+      <div class="meal-name">🌙 Dîner récupération</div>
+      <div class="meal-item">Protéine maigre <strong>120g</strong> : saumon, cabillaud, thon, poulet ou dinde</div>
+      <div class="meal-item">Légumes copieux : haricots verts, épinards, tomates, courgette</div>
+      <div class="meal-item">Féculent léger 80g cuit ou ½ patate douce</div>
+      <div class="meal-item" style="color:var(--s6);font-style:italic;font-size:12px">Le shaker du matin + 120g×2 repas = ~165g protéines journalières atteints.</div>
+    </div>
+  </div>
+
+  <!-- JOUR COURSE -->
+  <div id="day-course" class="day-meals">
+    <div class="sec-label" style="padding-top:14px">Mardi · Samedi (matin avant travail)</div>
+    <div class="meal-card vert">
+      <div class="meal-time">06h00 — Avant la sortie (réveil)</div>
+      <div class="meal-name">🏃 Pré-run express</div>
+      <div class="meal-item">Sortie &lt; 60 min → à jeun possible, juste un café (brûle-graisses)</div>
+      <div class="meal-item">Sortie &gt; 60 min → ½ banane + café 15 min avant</div>
+      <div class="meal-item">500 ml d'eau avant de partir</div>
+    </div>
+    <div class="meal-card gold">
+      <div class="meal-time">07h30–08h00 — Post-run = Petit-déjeuner</div>
+      <div class="meal-name">🥤 Shaker récup + avoine</div>
+      <div class="meal-item">🥤 <strong>Shaker whey isolat</strong> (1 dose ~25g) + lait végétal (250ml) + ½ banane — dans les 30 min post-run</div>
+      <div class="meal-item">Flocons d'avoine (50g) + fruits rouges</div>
+      <div class="meal-item">Café sans sucre</div>
+      <div class="meal-item" style="color:var(--s6);font-style:italic;font-size:12px">Jour avec shaker = pas d'œufs le matin. Pratique pour filer au boulot.</div>
+    </div>
+    <div class="meal-card vert">
+      <div class="meal-time">10h30 — Collation bureau</div>
+      <div class="meal-name">🍎 Snack anti-fringale</div>
+      <div class="meal-item">1 fruit + 10 amandes, ou yaourt nature 0%</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-time">12h30 — Déjeuner</div>
+      <div class="meal-name">🍽️ Repas normal allégé</div>
+      <div class="meal-item">Lentilles ou pois chiches (150g cuits) + carottes + dinde (100g)</div>
+      <div class="meal-item">Ou poulet (120g) + courgettes + riz complet</div>
+      <div class="meal-item" style="color:var(--s6);font-style:italic;font-size:12px">Le shaker post-run compense — portion viande/poisson réduite à 100–120g.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-time">19h30 — Dîner</div>
+      <div class="meal-name">🌙 Récup légère</div>
+      <div class="meal-item">Cabillaud ou poulet (120g) + légumes vapeur + patate douce</div>
+      <div class="meal-item">Fromage blanc 0% si encore faim</div>
+    </div>
+  </div>
+
+  <!-- JOUR REPOS -->
+  <div id="day-repos" class="day-meals">
+    <div class="sec-label" style="padding-top:14px">Jeudi</div>
+    <div class="meal-card">
+      <div class="meal-time">07h00</div>
+      <div class="meal-name">🌅 Petit-déj avec œufs</div>
+      <div class="meal-item">Flocons d'avoine (50g) + fruits rouges + yaourt nature</div>
+      <div class="meal-item">2 blancs d'œufs + 1 œuf entier brouillés <span class="chol">chol.</span> — jour de repos = pas de shaker</div>
+      <div class="meal-item">Café sans sucre</div>
+      <div class="meal-item" style="color:var(--s6);font-style:italic;font-size:12px">Les jours sans shaker, les œufs reprennent leur place au petit-déj pour couvrir les protéines.</div>
+    </div>
+    <div class="meal-card">
+      <div class="meal-time">12h30</div>
+      <div class="meal-name">🍽️ Déjeuner équilibré</div>
+      <div class="meal-item">Soupe légumes maison + pain complet + fromage blanc</div>
+      <div class="meal-item">Ou salade composée : pois chiches + tomates + thon (100g) + avocat</div>
+    </div>
+    <div class="meal-card vert">
+      <div class="meal-time">19h30</div>
+      <div class="meal-name">🌿 Dîner léger</div>
+      <div class="meal-item">Poulet ou dinde (120g) + tomates + salade verte</div>
+      <div class="meal-item">Ou omelette 2 blancs + 1 œuf entier + légumes (si quota hebdo non atteint) <span class="chol">chol.</span></div>
+      <div class="meal-item">Pas de féculent le soir en jour de repos</div>
+    </div>
+  </div>
+  <div style="height:8px"></div>
+</div>
+
+<!-- ===== LISTE DE COURSES ===== -->
+<div class="screen" id="sc-courses" style="display:none">
+  <div class="page-hero">
+    <div class="hero-tag">Liste de courses hebdomadaire · Budget modéré</div>
+    <div class="hero-title gold">LISTE <span>COURSES</span></div>
+  </div>
+
+  <div class="courses-header">
+    <div class="courses-title">Progression cochée</div>
+    <div class="budget-badge" id="budgetBadge">~55–70 € / sem</div>
+  </div>
+  <div class="prog-bar-wrap"><div class="prog-bar" id="coursesProg" style="width:0%"></div></div>
+
+  <div class="courses-actions">
+    <div class="c-btn" onclick="uncheckAll()">↺ Tout décocher</div>
+    <div class="c-btn" onclick="checkAll()">☑ Tout cocher</div>
+    <div class="c-btn primary" onclick="shareList()">📤 Partager</div>
+  </div>
+
+  <div id="courses-list"></div>
+  <div style="height:8px"></div>
+</div>
+
+<!-- ===== TAB BAR ===== -->
+<div class="tabbar">
+  <button class="tabbtn act" onclick="showScreen('programme',this,'act')">
+    <div class="ico">💪</div>Programme
+  </button>
+  <button class="tabbtn" onclick="showScreen('suivi',this,'act-vert')">
+    <div class="ico">📊</div>Charges
+  </button>
+  <button class="tabbtn" onclick="showScreen('nutrition',this,'act-vert')">
+    <div class="ico">🥗</div>Nutrition
+  </button>
+  <button class="tabbtn" onclick="showScreen('courses',this,'act-gold')">
+    <div class="ico">🛒</div>Courses
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const EXOS = {
+  push:[
+    {id:'p1',name:'Développé couché Machine',machine:'Machine chest press',sets:3,target:'12–15 reps',unit:'kg'},
+    {id:'p2',name:'Écarté pectoraux Machine',machine:'Machine pec-deck / papillon',sets:3,target:'15 reps',unit:'kg'},
+    {id:'p3',name:'Développé épaules Machine',machine:'Machine shoulder press',sets:3,target:'12 reps',unit:'kg'},
+    {id:'p4',name:'Élévations latérales Haltères',machine:'Rack haltères',sets:3,target:'15 reps',unit:'kg'},
+    {id:'p5',name:'Dips Machine (assistés)',machine:'Machine dips/tractions assistées',sets:3,target:'12 reps',unit:'kg'},
+    {id:'p6',name:'Pushdowns triceps Poulie',machine:'Câble station, corde',sets:3,target:'15 reps',unit:'kg'},
+  ],
+  pull:[
+    {id:'u1',name:'Tirage vertical Machine',machine:'Lat pulldown / câble',sets:4,target:'12 reps',unit:'kg'},
+    {id:'u2',name:'Rowing Machine assise',machine:'Seated row machine',sets:3,target:'12 reps',unit:'kg'},
+    {id:'u3',name:'Pull-over Machine',machine:'Machine pull-over / câble haut',sets:3,target:'15 reps',unit:'kg'},
+    {id:'u4',name:'Shrugs Haltères / Barre',machine:'Rack haltères ou barre',sets:3,target:'15 reps',unit:'kg'},
+    {id:'u5',name:'Curl biceps Haltères alterné',machine:'Rack haltères',sets:3,target:'12 reps',unit:'kg'},
+    {id:'u6',name:'Curl Marteau',machine:'Rack haltères',sets:3,target:'12 reps',unit:'kg'},
+  ],
+  legs:[
+    {id:'l1',name:'Leg Press Machine 🦵',machine:'Machine leg press inclinée',sets:4,target:'15 reps · 90° max',unit:'kg'},
+    {id:'l2',name:'Extensions quadriceps Machine',machine:'Machine leg extension',sets:3,target:'15 reps',unit:'kg'},
+    {id:'l3',name:'Leg Curl couché Machine',machine:'Machine lying leg curl',sets:3,target:'15 reps',unit:'kg'},
+    {id:'l4',name:'Hip Thrust Machine / Banc',machine:'Machine glute bridge',sets:4,target:'15 reps',unit:'kg'},
+    {id:'l5',name:'Mollets Machine debout',machine:'Machine standing calf raise',sets:4,target:'20 reps',unit:'kg'},
+    {id:'l6',name:'Abducteurs Machine',machine:'Machine hip abduction',sets:3,target:'20 reps',unit:'kg'},
+  ],
+  core:[
+    {id:'c1',name:'Gainage frontal (Planche)',machine:'Sol, tapis',sets:3,target:'30–45 sec',unit:'sec'},
+    {id:'c2',name:'Gainage latéral',machine:'Sol, chaque côté',sets:3,target:'25 sec',unit:'sec'},
+    {id:'c3',name:'Crunchs à la poulie haute',machine:'Câble station, corde',sets:3,target:'20 reps',unit:'kg'},
+    {id:'c4',name:'Relevés de jambes suspendu',machine:'Barre / chaise romaine',sets:3,target:'12–15 reps',unit:''},
+    {id:'c5',name:'Russian Twist médecine-ball',machine:'Zone free weights',sets:3,target:'20 reps',unit:'kg'},
+    {id:'c6',name:'Dead Bug',machine:'Sol, tapis',sets:3,target:'10 reps/côté',unit:''},
+    {id:'c7',name:'Vacuum abdominal',machine:'Debout',sets:3,target:'10 sec',unit:'sec'},
+  ]
+};
+
+const COURSES_DATA = [
+  { cat:'🥩 Protéines', color:'var(--orange)', items:[
+    {name:'Blancs de poulet (filets)',qty:'900g',tip:'surgelés OK, moins cher'},
+    {name:'Filets de dinde',qty:'400g'},
+    {name:'Rumsteck ou filet de bœuf maigre',qty:'300g',tip:'max 2 repas/sem ⚠️chol.'},
+    {name:'Saumon (frais ou surgelé)',qty:'400g',tip:'oméga-3, bon pour chol.'},
+    {name:'Cabillaud ou merlu',qty:'400g',tip:'poisson blanc, peu cher'},
+    {name:'Thon en boîte (eau)',qty:'2 boîtes',tip:'pratique, rapide'},
+    {name:'Œufs',qty:'6',tip:'réduits — 2 entiers/sem max, blancs OK ⚠️chol.'},
+    {name:'Yaourt grec 0%',qty:'6 pots'},
+    {name:'Fromage blanc 0%',qty:'500g'},
+  ]},
+  { cat:'🥤 Compléments protéinés', color:'var(--bleu)', items:[
+    {name:'Whey isolat (Myprotein / Foodspring)',qty:'1 kg',tip:'~30–40€, dure ~1 mois · &lt;5g sucre/dose'},
+    {name:'Shaker (gourde mélangeur)',qty:'1',tip:'achat unique si pas déjà équipé'},
+  ]},
+  { cat:'🌾 Féculents', color:'var(--gold)', items:[
+    {name:'Riz basmati',qty:'1 kg'},
+    {name:'Flocons d\'avoine',qty:'500g'},
+    {name:'Lentilles vertes ou corail',qty:'500g',tip:'protéines + fibres, pas cher'},
+    {name:'Pois chiches (boîte)',qty:'2 boîtes'},
+    {name:'Pain complet',qty:'1 pain'},
+    {name:'Patates douces',qty:'1 kg'},
+  ]},
+  { cat:'🥦 Légumes', color:'var(--vert)', items:[
+    {name:'Tomates',qty:'1 kg'},
+    {name:'Haricots verts (frais ou surgelés)',qty:'500g'},
+    {name:'Champignons',qty:'400g'},
+    {name:'Épinards (frais ou surgelés)',qty:'300g'},
+    {name:'Oignons',qty:'1 filet'},
+    {name:'Courgettes',qty:'3',tip:'légume saisonnier, économique'},
+    {name:'Salade verte (sachet)',qty:'2 sachets'},
+    {name:'Carottes',qty:'500g'},
+    {name:'Avocat',qty:'2',tip:'bonnes graisses anti-chol.'},
+  ]},
+  { cat:'🍌 Fruits', color:'#e9c46a', items:[
+    {name:'Bananes',qty:'6–8',tip:'pré/post effort'},
+    {name:'Pommes',qty:'4'},
+    {name:'Fruits rouges (surgelés OK)',qty:'500g',tip:'antioxydants'},
+    {name:'Citrons',qty:'4'},
+  ]},
+  { cat:'🥛 Laitages & alternatives', color:'var(--bleu)', items:[
+    {name:'Lait demi-écrémé ou végétal',qty:'1,5 L'},
+    {name:'Yaourt nature (non sucré)',qty:'6 pots'},
+  ]},
+  { cat:'🫒 Matières grasses & condiments', color:'var(--gold)', items:[
+    {name:'Huile d\'olive extra vierge',qty:'1 bouteille',tip:'favorise le bon chol.'},
+    {name:'Noix ou amandes',qty:'200g',tip:'collation · bons lipides'},
+    {name:'Purée d\'amande',qty:'1 pot',tip:'pré-séance sur pain'},
+    {name:'Miel',qty:'1 petit pot'},
+    {name:'Herbes & épices (ail, cumin, paprika…)',qty:'selon stock'},
+  ]},
+  { cat:'🥤 Boissons', color:'var(--vert)', items:[
+    {name:'Eau minérale (objectif 3L/jour)',qty:'12 bouteilles',tip:'ou filtre robinet'},
+    {name:'Café',qty:'selon conso'},
+    {name:'Lait végétal (avoine ou amande)',qty:'2 L',tip:'base shaker + avoine du matin'},
+  ]},
+];
+
+// ============================================================
+// STORAGE
+// ============================================================
+const LS = 'nicolas_v2';
+let wkData = {};
+let curWeek = 1;
+let checkedItems = {};
+
+function loadStorage(){
+  try {
+    const r = localStorage.getItem(LS);
+    if(r){ const d=JSON.parse(r); wkData=d.wkData||{}; checkedItems=d.checkedItems||{}; curWeek=d.curWeek||1; }
+  } catch(e){}
+}
+function persist(){
+  localStorage.setItem(LS, JSON.stringify({wkData, checkedItems, curWeek}));
+}
+
+function getExoEntry(seance,exoId,week){
+  return wkData?.[`w${week}`]?.[seance]?.[exoId]||null;
+}
+function setExoEntry(seance,exoId,week,weights,note){
+  const k=`w${week}`;
+  if(!wkData[k]) wkData[k]={};
+  if(!wkData[k][seance]) wkData[k][seance]={};
+  wkData[k][seance][exoId]={weights,note,ts:Date.now()};
+  persist();
+}
+function getHistory(exoId){
+  const res=[];
+  Object.keys(wkData).sort((a,b)=>+a.slice(1)-+b.slice(1)).forEach(wk=>{
+    ['push','pull','legs','core'].forEach(s=>{
+      if(wkData[wk]?.[s]?.[exoId]) res.push({week:+wk.slice(1),seance:s,...wkData[wk][s][exoId]});
+    });
+  });
+  return res;
+}
+
+// ============================================================
+// SCREENS
+// ============================================================
+const SCREENS = ['programme','suivi','nutrition','courses'];
+function showScreen(id,btn,actCls){
+  SCREENS.forEach(s=>{
+    document.getElementById('sc-'+s).style.display='none';
+  });
+  document.getElementById('sc-'+id).style.display='block';
+  document.querySelectorAll('.tabbtn').forEach(b=>b.className='tabbtn');
+  btn.className='tabbtn '+actCls;
+  if(id==='suivi') renderSuivi();
+  if(id==='courses') renderCourses();
+}
+
+// ============================================================
+// PROGRAMME ACCORDIONS
+// ============================================================
+function togAcc(head){
+  const body=head.nextElementSibling;
+  head.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// ============================================================
+// NUTRITION DAY TOGGLE
+// ============================================================
+function showDay(id,btn){
+  document.querySelectorAll('.day-meals').forEach(d=>d.classList.remove('active'));
+  document.querySelectorAll('.dtbtn').forEach(b=>{b.className='dtbtn';});
+  document.getElementById('day-'+id).classList.add('active');
+  if(id==='salle') btn.className='dtbtn act';
+  else if(id==='course') btn.className='dtbtn act-vert';
+  else btn.className='dtbtn';
+}
+
+// ============================================================
+// SUIVI CHARGES
+// ============================================================
+function getPhase(w){ if(w<=6) return 'Phase 1 — Fondations'; if(w<=14) return 'Phase 2 — Intensification'; return 'Phase 3 — Consolidation'; }
+
+function chWeek(d){
+  const n=curWeek+d;
+  if(n<1||n>24) return;
+  curWeek=n; persist();
+  renderSuiviHeader();
+  renderSuivi();
+}
+
+function renderSuiviHeader(){
+  document.getElementById('wkNum').textContent='Semaine '+curWeek;
+  document.getElementById('wkPhase').textContent=getPhase(curWeek);
+  document.getElementById('stWk').textContent='S'+curWeek;
+  updateStats();
+}
+
+function updateStats(){
+  const wk='w'+curWeek, d=wkData[wk]||{};
+  let seances=0,exos=0,prs=0;
+  ['push','pull','legs','core'].forEach(s=>{
+    if(d[s]&&Object.keys(d[s]).length>0){
+      seances++;
+      Object.keys(d[s]).forEach(id=>{
+        const ws=d[s][id]?.weights||[];
+        if(ws.some(w=>w>0)){
+          exos++;
+          const hist=getHistory(id);
+          const mxNow=Math.max(...ws.filter(w=>w>0),0);
+          const mxPrev=hist.filter(h=>h.week<curWeek).reduce((m,h)=>Math.max(m,...h.weights.filter(w=>w>0),0),0);
+          if(mxNow>mxPrev&&mxPrev>0) prs++;
+        }
+      });
+    }
+  });
+  document.getElementById('stSeances').textContent=seances;
+  document.getElementById('stExos').textContent=exos;
+  document.getElementById('stPR').textContent=prs;
+}
+
+let curSuiviSeance='push';
+function showSuivi(seance,pill){
+  curSuiviSeance=seance;
+  document.querySelectorAll('.suivi-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('suivi-'+seance).classList.add('active');
+  document.querySelectorAll('#suiviPills .pill').forEach(p=>p.className='pill');
+  pill.className='pill act-'+seance;
+  renderSeanceSuivi(seance);
+}
+
+function renderSeanceSuivi(seance){
+  const container=document.getElementById('suivi-'+seance);
+  const exos=EXOS[seance];
+  let html='';
+  exos.forEach((exo,idx)=>{
+    const entry=getExoEntry(seance,exo.id,curWeek);
+    const weights=entry?.weights||Array(exo.sets).fill(0);
+    const note=entry?.note||'';
+
+    let setsHtml='';
+    for(let s=0;s<exo.sets;s++){
+      const val=weights[s]||'';
+      const prev=getPrevW(seance,exo.id,s);
+      const currV=weights[s]||0;
+      let prevCls='',prevTxt='—';
+      if(prev!==null){
+        prevTxt=prev+(exo.unit||'kg');
+        if(currV>prev) prevCls='up';
+        else if(currV<prev&&currV>0) prevCls='dn';
+      }
+      setsHtml+=`<div class="set-box">
+        <div class="set-lbl">Série ${s+1}</div>
+        <input type="number" inputmode="decimal" class="set-inp" id="si_${seance}_${exo.id}_${s}"
+          value="${val}" placeholder="0" min="0" max="500" step="0.5"
+          oninput="onW('${seance}','${exo.id}',${s})">
+        <div class="set-unit">${exo.unit||'—'}</div>
+        <div class="set-prev ${prevCls}" id="sp_${seance}_${exo.id}_${s}">${prevTxt}</div>
+      </div>`;
+    }
+
+    const hist=getHistory(exo.id);
+    let histHtml='';
+    if(!hist.length) histHtml='<div style="padding:12px 16px;font-size:12px;color:var(--s6);font-style:italic">Aucun historique</div>';
+    else histHtml=hist.slice(-8).reverse().map((h,hi)=>{
+      const prev=hist[hist.indexOf(h)-1];
+      const mx=Math.max(...h.weights.filter(w=>w>0),0);
+      const pmx=prev?Math.max(...prev.weights.filter(w=>w>0),0):0;
+      let delta='';
+      if(pmx>0&&mx>0){const d=mx-pmx;if(d>0)delta=`<span class="delta up">+${d}</span>`;else if(d<0)delta=`<span class="delta dn">${d}</span>`;else delta=`<span class="delta eq">=</span>`;}
+      return `<div class="hist-row">
+        <span class="hist-wk">S${h.week}</span>
+        <div class="hist-ws">${h.weights.filter(w=>w>0).map(w=>`<span class="hist-w">${w}${exo.unit||''}</span>`).join('')}</div>
+        ${delta}
+        <span class="hist-note">${h.note||''}</span>
+      </div>`;
+    }).join('');
+
+    html+=`<div class="exo-card-suivi">
+      <div class="ecs-head">
+        <div class="ecs-num">${idx+1}</div>
+        <div class="ecs-info"><div class="ecs-name">${exo.name}</div><div class="ecs-machine">${exo.machine}</div></div>
+        <div class="ecs-target">${exo.target}</div>
+      </div>
+      <div class="sets-row">${setsHtml}</div>
+      <div class="note-row"><textarea class="note-inp" id="ni_${seance}_${exo.id}"
+        placeholder="Notes… ressenti, douleur, variante…"
+        oninput="onNote('${seance}','${exo.id}')">${note}</textarea></div>
+      <button class="hist-toggle-btn" onclick="togHist('${seance}_${exo.id}')">
+        📈 Historique (${hist.length}) <span id="hta_${seance}_${exo.id}">▼</span>
+      </button>
+      <div class="hist-panel" id="hp_${seance}_${exo.id}">${histHtml}</div>
+    </div>`;
+  });
+  html+=`<button class="save-btn" onclick="saveSeance('${seance}')">💾 Sauvegarder la séance ${seance.toUpperCase()}</button>`;
+  container.innerHTML=html;
+}
+
+function getPrevW(seance,exoId,setIdx){
+  for(let w=curWeek-1;w>=1;w--){
+    const e=getExoEntry(seance,exoId,w);
+    if(e&&e.weights&&e.weights[setIdx]>0) return e.weights[setIdx];
+  }
+  return null;
+}
+
+function renderSuivi(){
+  renderSuiviHeader();
+  renderSeanceSuivi(curSuiviSeance);
+}
+
+function onW(seance,exoId,setIdx){
+  const exo=EXOS[seance].find(e=>e.id===exoId);
+  const weights=Array(exo.sets).fill(0).map((_,s)=>{
+    const el=document.getElementById(`si_${seance}_${exoId}_${s}`);
+    return el?parseFloat(el.value)||0:0;
+  });
+  const note=document.getElementById(`ni_${seance}_${exoId}`)?.value||'';
+  setExoEntry(seance,exoId,curWeek,weights,note);
+  // Update prev displays
+  for(let s=0;s<exo.sets;s++){
+    const prev=getPrevW(seance,exoId,s);
+    const el=document.getElementById(`sp_${seance}_${exoId}_${s}`);
+    if(!el) continue;
+    const currV=weights[s]||0;
+    if(prev===null){el.className='set-prev';el.textContent='—';continue;}
+    el.textContent=prev+(exo.unit||'kg');
+    if(currV>prev) el.className='set-prev up';
+    else if(currV<prev&&currV>0) el.className='set-prev dn';
+    else el.className='set-prev';
+  }
+  updateStats();
+}
+
+function onNote(seance,exoId){
+  const exo=EXOS[seance].find(e=>e.id===exoId);
+  const weights=Array(exo.sets).fill(0).map((_,s)=>{
+    const el=document.getElementById(`si_${seance}_${exoId}_${s}`);
+    return el?parseFloat(el.value)||0:0;
+  });
+  const note=document.getElementById(`ni_${seance}_${exoId}`)?.value||'';
+  setExoEntry(seance,exoId,curWeek,weights,note);
+}
+
+function togHist(key){
+  const p=document.getElementById('hp_'+key);
+  const a=document.getElementById('hta_'+key);
+  p.classList.toggle('open');
+  a.textContent=p.classList.contains('open')?'▲':'▼';
+}
+
+function saveSeance(seance){
+  showToast('Séance '+seance.toUpperCase()+' sauvegardée ✓');
+  updateStats();
+}
+
+// ============================================================
+// COURSES
+// ============================================================
+function renderCourses(){
+  const container=document.getElementById('courses-list');
+  let html='';
+  COURSES_DATA.forEach(cat=>{
+    html+=`<div class="cat-block"><div class="cat-title" style="color:${cat.color}">${cat.cat}</div>`;
+    cat.items.forEach(item=>{
+      const key=cat.cat+'_'+item.name;
+      const checked=checkedItems[key]||false;
+      html+=`<div class="course-item${checked?' checked':''}" onclick="toggleCourse('${CSS.escape(key)}',this)">
+        <div class="course-cb"><span class="course-cb-tick">✓</span></div>
+        <div>
+          <div class="course-name">${item.name}</div>
+          ${item.tip?`<div style="font-size:11px;color:var(--s6);font-style:italic;margin-top:2px">${item.tip}</div>`:''}
+        </div>
+        <div class="course-qty">${item.qty}</div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  container.innerHTML=html;
+  updateProg();
+}
+
+function toggleCourse(key,el){
+  // key may have been CSS-escaped in the onclick attr; use data or find by element
+  // find key from element
+  const allItems=[];
+  COURSES_DATA.forEach(cat=>cat.items.forEach(item=>allItems.push({key:cat.cat+'_'+item.name,name:item.name})));
+  // find which item this element corresponds to by its name text
+  const nameEl=el.querySelector('.course-name');
+  if(!nameEl) return;
+  const name=nameEl.textContent;
+  const found=allItems.find(i=>i.name===name);
+  if(!found) return;
+  const k=found.key;
+  checkedItems[k]=!checkedItems[k];
+  persist();
+  el.classList.toggle('checked');
+  updateProg();
+}
+
+function updateProg(){
+  const total=COURSES_DATA.reduce((s,c)=>s+c.items.length,0);
+  const done=Object.values(checkedItems).filter(Boolean).length;
+  const pct=total?Math.round((done/total)*100):0;
+  document.getElementById('coursesProg').style.width=pct+'%';
+}
+
+function uncheckAll(){
+  checkedItems={};persist();renderCourses();
+}
+function checkAll(){
+  COURSES_DATA.forEach(cat=>cat.items.forEach(item=>{checkedItems[cat.cat+'_'+item.name]=true;}));
+  persist();renderCourses();
+}
+function buildListText(){
+  let txt='🛒 Liste de courses Nicolas\n\n';
+  COURSES_DATA.forEach(cat=>{
+    txt+=cat.cat+'\n';
+    cat.items.forEach(item=>{
+      const k=cat.cat+'_'+item.name;
+      txt+=(checkedItems[k]?'✅':'☐')+' '+item.name+' — '+item.qty+'\n';
+    });
+    txt+='\n';
+  });
+  return txt.trim();
+}
+
+function shareList(){
+  const txt=buildListText();
+  // Try native share sheet first (works on iOS Safari with user gesture)
+  if(navigator.share){
+    navigator.share({title:'Liste de courses Nicolas',text:txt}).catch(()=>openShareModal(txt));
+  } else {
+    openShareModal(txt);
+  }
+}
+
+function openShareModal(txt){
+  // Remove existing modal if any
+  const old=document.getElementById('shareModal');
+  if(old) old.remove();
+
+  const encoded=encodeURIComponent(txt);
+  const modal=document.createElement('div');
+  modal.id='shareModal';
+  modal.style.cssText=`
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,0.82);
+    display:flex;align-items:flex-end;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  `;
+  modal.innerHTML=`
+    <div style="
+      background:#1a1a1a;border-radius:20px 20px 0 0;
+      width:100%;padding:0 0 8px;
+      border-top:1px solid #333;
+      max-height:80vh;display:flex;flex-direction:column;
+    ">
+      <!-- Handle -->
+      <div style="display:flex;justify-content:center;padding:12px 0 4px">
+        <div style="width:36px;height:4px;background:#444;border-radius:2px"></div>
+      </div>
+      <!-- Title -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 14px">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#888">Partager la liste</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:26px;color:#c9a84c;margin-top:2px">LISTE DE COURSES</div>
+        </div>
+        <button onclick="document.getElementById('shareModal').remove()" style="
+          background:#2a2a2a;border:1px solid #444;border-radius:50%;
+          width:34px;height:34px;color:#888;font-size:16px;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;
+        ">✕</button>
+      </div>
+      <!-- Action buttons -->
+      <div style="display:flex;gap:10px;padding:0 16px 16px;flex-shrink:0">
+        <a href="sms:?body=${encoded}" style="
+          flex:1;background:rgba(82,183,136,0.12);border:1px solid rgba(82,183,136,0.35);
+          border-radius:12px;padding:13px 8px;text-align:center;text-decoration:none;
+          font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;
+          letter-spacing:1px;color:#52b788;display:block;
+        ">💬 Message</a>
+        <a href="mailto:?subject=Liste%20de%20courses&body=${encoded}" style="
+          flex:1;background:rgba(78,168,222,0.12);border:1px solid rgba(78,168,222,0.35);
+          border-radius:12px;padding:13px 8px;text-align:center;text-decoration:none;
+          font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;
+          letter-spacing:1px;color:#4ea8de;display:block;
+        ">✉️ E-mail</a>
+        <button onclick="copyList()" id="copyBtn" style="
+          flex:1;background:rgba(232,98,26,0.12);border:1px solid rgba(232,98,26,0.35);
+          border-radius:12px;padding:13px 8px;text-align:center;
+          font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;
+          letter-spacing:1px;color:#e8621a;cursor:pointer;
+        ">📋 Copier</button>
+      </div>
+      <!-- Separator -->
+      <div style="height:1px;background:#2a2a2a;margin:0 16px 14px;flex-shrink:0"></div>
+      <!-- Scrollable text area -->
+      <div style="padding:0 16px;flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#555;margin-bottom:8px;flex-shrink:0">
+          Sélectionne le texte ci-dessous pour copier manuellement
+        </div>
+        <textarea id="shareText" readonly style="
+          flex:1;min-height:140px;
+          background:#111;border:1px solid #333;border-radius:10px;
+          color:#bbb;font-family:'DM Sans',sans-serif;font-size:12px;
+          font-weight:300;line-height:1.6;
+          padding:12px;resize:none;width:100%;
+          -webkit-user-select:text;user-select:text;
+        ">${txt}</textarea>
+      </div>
+      <div style="height:16px;flex-shrink:0"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  // Close on backdrop tap
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.remove(); });
+  // Auto-select text on tap for easy copy
+  const ta=document.getElementById('shareText');
+  ta.addEventListener('focus',()=>{ setTimeout(()=>ta.select(),50); });
+}
+
+function copyList(){
+  const ta=document.getElementById('shareText');
+  const btn=document.getElementById('copyBtn');
+  if(!ta||!btn) return;
+  // Try modern clipboard API
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(()=>{
+      btn.textContent='✅ Copié!';
+      btn.style.background='rgba(82,183,136,0.2)';
+      btn.style.borderColor='rgba(82,183,136,0.5)';
+      btn.style.color='#52b788';
+      setTimeout(()=>{btn.textContent='📋 Copier';btn.style.background='rgba(232,98,26,0.12)';btn.style.borderColor='rgba(232,98,26,0.35)';btn.style.color='#e8621a';},2000);
+    }).catch(()=>fallbackCopy(ta,btn));
+  } else {
+    fallbackCopy(ta,btn);
+  }
+}
+
+function fallbackCopy(ta,btn){
+  // iOS fallback: select all text
+  ta.focus();
+  ta.setSelectionRange(0,ta.value.length);
+  try {
+    document.execCommand('copy');
+    btn.textContent='✅ Copié!';
+    btn.style.background='rgba(82,183,136,0.2)';
+    btn.style.borderColor='rgba(82,183,136,0.5)';
+    btn.style.color='#52b788';
+    setTimeout(()=>{btn.textContent='📋 Copier';btn.style.background='rgba(232,98,26,0.12)';btn.style.borderColor='rgba(232,98,26,0.35)';btn.style.color='#e8621a';},2000);
+  } catch(e){
+    // Last resort: just highlight so user can copy manually
+    btn.textContent='👆 Sélectionner';
+    ta.focus();
+    ta.setSelectionRange(0,ta.value.length);
+  }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ============================================================
+// INIT — migrate old data if exists
+// ============================================================
+function migrateOldData(){
+  try {
+    const old=localStorage.getItem('nicolas_workout_v1');
+    if(old&&!localStorage.getItem('nicolas_v2_migrated')){
+      const oldData=JSON.parse(old);
+      wkData=oldData;
+      persist();
+      localStorage.setItem('nicolas_v2_migrated','1');
+    }
+  } catch(e){}
+}
+
+loadStorage();
+migrateOldData();
+renderSuiviHeader();
+// Pre-render suivi push so it's ready
+renderSeanceSuivi('push');
+</script>
+</body>
+</html>
